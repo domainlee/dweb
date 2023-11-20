@@ -10,7 +10,7 @@
                 'type' => 'text',
             ),
         ),
-        'Footer' => array(
+        'Footer 123' => array(
             'hotline' => array(
                 'type' => 'text',
             ),

@@ -1,7 +1,7 @@
 <?php
     $home = array(
-        'Banner' => array (
-            'label' => 'Banner',
+        'Banner 1' => array (
+            'label' => 'Banner updated',
             'type' => 'selectmulti',
             'name' => 'banner',
             'limit' => 5,

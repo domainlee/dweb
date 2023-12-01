@@ -1,0 +1,54 @@
+<?php
+    echo $this->headtitle($this->escapehtml($this->translate('Blocks')));
+    $fieldJson = json_decode($this->fieldJson, true);
+    $value = $this->value;
+    if(!empty($field)):
+    $c = 0;
+    $i = 0;
+?>
+<style>
+    .card-box__option--background, .card-box__option--background .nav.nav-tabs+.tab-content{
+        background-color: #f9f9f9;
+    }
+    .portlet .collapsed .ion-minus-round:before {
+        content: "\f217" !important;
+    }
+    .portlet .portlet-heading {
+        cursor: pointer;
+    }
+</style>
+<div class="row">
+    <div class="col-sm-12">
+        <form class="formHomepage form-horizontal" method="post" enctype="multipart/form-data" data-parsley-validate novalidate>
+            <div class="card-box card-box__option--background">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="btn-group pull-right">
+                            <button type="submit" class="btn btn-default waves-effect waves-light">Save</button>
+                        </div>
+                        <div class="btn-group pull-left m-t-0 m-b-20">
+                            <button type="button" class="btn btn-primary dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-expanded="false">Blocks <span class="m-l-5"><i class="fa fa-file-photo-o"></i></span></button>
+                            <?php $fieldString = []; if(!empty($fieldJson)): ?>
+                            <ul class="dropdown-menu drop-menu-right dropdown-element" role="menu">
+                                <?php foreach($fieldJson as $k => $f):
+                                    $fieldString[] = vnString($k);
+                                ?>
+                                <li><a data-key="<?= $k ?>" href="#"><?= $f['label'] ?></a></li>
+                                <?php endforeach; ?>
+                            </ul>
+                            <?php endif; ?>
+                            <a class="btn btn-link" href="/admin/page/homepage">Other Options</a>
+                        </div>
+                    </div>
+                </div>
+                <div id="drapElement">
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php endif; ?>
+

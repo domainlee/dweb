@@ -86,7 +86,7 @@ $menu = $_COOKIE["menuleft"]
                 <ul class="nav navbar-nav hidden-xs">
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle waves-effect waves-light" data-toggle="dropdown"
-                           role="button" aria-haspopup="true" aria-expanded="false">Tùy chọn nhanh <span
+                           role="button" aria-haspopup="true" aria-expanded="false">Quick Options <span
                                 class="caret"></span></a>
                         <ul class="dropdown-menu">
                             <li><a href="/admin/page/add">Thêm trang</a></li>
@@ -149,11 +149,11 @@ $menu = $_COOKIE["menuleft"]
                         </a>
                         <ul class="dropdown-menu">
                             <?php $optionBasic = $this->user()->getUser(); ?>
-                            <li><a href="/admin/user/edit/<?= $optionBasic->getId() ?>"><i class="ti-user m-r-10 text-custom"></i> Thông tin</a></li>
+                            <li><a href="/admin/user/edit/<?= $optionBasic->getId() ?>"><i class="ti-user m-r-10 text-custom"></i> Information</a></li>
 <!--                            <li><a href="/admin/setup"><i class="ti-settings m-r-10 text-custom"></i> Cấu hình</a></li>-->
 <!--                            <li><a href="/huongdan"><i class="ti-user m-r-10 text-custom icon-book-open"></i> Hướng dẫn</a></li>-->
 <!--                            <li class="divider"></li>-->
-                            <li><a href="/user/signout"><i class="ti-power-off m-r-10 text-danger"></i> Thoát</a></li>
+                            <li><a href="/user/signout"><i class="ti-power-off m-r-10 text-danger"></i> Signout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -280,7 +280,8 @@ $menu = $_COOKIE["menuleft"]
             '/assets/js/jquery.app.js',
             '/assets/pages/jquery.form-advanced.init.js',
             '/assets/js/upload.js',
-            '/assets/js/jquery.drapElement.js',
+//            '/assets/js/jquery.drapElement.js',
+            '/assets/js/jquery.drapElementV2.js',
             '/assets/js/excel/shim.js',
             '/assets/js/excel/jszip.js',
             '/assets/js/excel/xlsx.js',

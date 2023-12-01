@@ -771,6 +771,7 @@ class SetupController extends AbstractActionController{
         } else {
             if($this->getRequest()->isPost()) {
                 $data = $this->getRequest()->getPost()->toArray();
+//                print_r($data);die;
                 $options = [];
                 foreach($data as $k => $d) {
                     $type = explode('_', $k);
@@ -987,14 +988,543 @@ class SetupController extends AbstractActionController{
             }
 
             $field = include('public/tp/'.$dir.'/template.php');
+            $fields = include('public/tp/'.$dir.'/fields.php');
             $fieldJson = include('public/tp/'.$dir.'/home.php');
 
             return new ViewModel(array(
                 'field' => $field,
+                'fields' => $fields,
                 'fieldJson' => json_encode($fieldJson),
                 'value' => $value,
             ));
         }
+    }
+
+    public function sectionsAction() {
+        $this->layout('layout/admin');
+        $sl = $this->getServiceLocator();
+        $storeService = $sl->get('Store\Service\Store');
+        $uiTemplate = $storeService->getUitemplate();
+        $dir = $uiTemplate->getDirectory();
+        $sto = $storeService->getStoreId();
+        $idTemplate = $uiTemplate->getId();
+        $u = $sl->get('User\Service\User');
+        $storeId = $u->getStoreId();
+
+        $domainMapper = $sl->get('Admin\Model\DomainMapper');
+        $domain = new \Admin\Model\Domain();
+        $domain->setStoreId($storeId);
+        $rd = $domainMapper->get($domain);
+
+        $template = new \Admin\Model\Template();
+        $template->setId($rd->getUitemplateId());
+        $templateMapper = $sl->get('Admin\Model\TemplateMapper');
+        $rT = $templateMapper->get($template);
+        $dir = $rT->getDirectory();
+
+        $productMapper = $this->getServiceLocator()->get('Admin\Model\ProductMapper');
+        $domainMapper = $this->getServiceLocator()->get('Store\Model\DomainMapper');
+
+        $storeDomain = new \Store\Model\Domain();
+        $storeDomain->setUitemplate($rd->getUitemplateId());
+        $storeDomain->setStoreId($storeId);
+
+        $domainMapper->get($storeDomain);
+        $value = json_decode($storeDomain->getHomePage(), true);
+
+        if($this->getRequest()->getPost()['update']) {
+            if(!empty($value)) {
+                $options = [];
+//                print_r($value);die;
+                foreach($value as $k => $d) {
+                    $type = explode(' ', $k);
+                    if ($type[2] == 'banner') {
+                        $bv = [];
+                        if(is_array($d)) {
+                            foreach ($d[$type[0]] as $p) {
+                                $bannerMapper = $this->getServiceLocator()->get('Admin\Model\BannerMapper');
+                                $bannerR = new \Admin\Model\Banner();
+                                $bannerR->setId((int)$p['id']);
+                                $r = $bannerMapper->get($bannerR);
+                                if (!empty($r)) {
+                                    $bv[(int)$p['id'].'_banner'] = ['id' => $r->getId(), 'url' => $r->getLink(), 'title' => $r->getName(), 'image' => $r->getImage(), 'description' => $r->getDescription()];
+                                }
+                            }
+                        }
+                        $options[$k] = array (
+                            'limit' => $d['limit'],
+                            'label' => $d['label'] ? $d['label']:'Hình ảnh',
+                            $type[0] => $bv
+                        );
+                    } elseif ($type[2] == 'multifield') {
+                        if(is_array($d)) {
+                            foreach ($d as $kk => $vv) {
+                                $type2 = explode(' ', $kk);
+
+                                if($type2[1] == 'product') {
+                                    $pv = [];
+                                    foreach($vv[$type2[0]] as $p) {
+                                        $product = new \Admin\Model\Product();
+                                        $product->setId((int)$p['id']);
+                                        $r = $productMapper->get($product);
+                                        if(!empty($r)) {
+                                            $pv[(int)$p['id'].'_product'] = ['id' => $r->getId(), 'url' => $r->getViewLink(), 'title' => $r->getTitle(), 'price' => $r->getPrice(), 'priceOld' => $r->getPriceOld(), 'image' => $r->getImage(), 'intro' => $r->getIntro(), 'extraContent' => $r->getExtraContent()];
+                                        }
+                                    }
+                                    $pv1[$type[1]][$kk] = array(
+                                        'label' => $vv['label'] ? $vv['label']:'Sản phẩm',
+                                        'limit' => $vv['limit'],
+                                        $type2[0] => $pv,
+                                    );
+                                } elseif($type2[1] == 'article') {
+                                    $at = [];
+                                    foreach($vv[$type2[0]] as $p) {
+                                        $articleMapper = $this->getServiceLocator()->get('Admin\Model\ArticleMapper');
+                                        $articleR = new \Admin\Model\Article();
+                                        $articleR->setId((int)$p['id']);
+                                        $r = $articleMapper->get($articleR);
+                                        if (!empty($r)) {
+                                            $at[(int)$p['id'].'_article'] = ['id' => $r->getId(), 'url' => $r->getViewLink(), 'title' => $r->getTitle(), 'intro' => $r->getDescription(), 'image'=> $r->getImage(), 'category' => $r->getCateName(), 'date' => $r->getCreatedDateTime(), 'extraContent' => $r->getExtraContent() ];
+                                        }
+                                    }
+                                    $at1[$type[1]][$kk] = array(
+                                        'label' => $vv['label'] ? $vv['label']:'Tin tức',
+                                        'limit' => $vv['limit'],
+                                        $type2[0] => $at,
+                                    );
+                                } elseif($type2[1] == 'productcategory') {
+                                    $pc = [];
+                                    foreach($vv[$type2[0]] as $p) {
+                                        $productcMapper = $this->getServiceLocator()->get('Admin\Model\ProductcMapper');
+                                        $categoryR = new \Admin\Model\Productc();
+                                        $categoryR->setId((int)$p['id']);
+                                        $r = $productcMapper->get($categoryR);
+                                        if (!empty($r)) {
+                                            $categoryP = new \Admin\Model\Productc();
+                                            $categoryP->setParentId($r->getId());
+                                            $rP = $productcMapper->fetchAll($categoryP);
+                                            $child = [];
+                                            if(!empty($rP)) {
+                                                foreach($rP as $pa) {
+                                                    $child[] = ['id' => $pa->getId(), 'url' => $pa->getViewLink(), 'title' => $pa->getName(), 'image' => $pa->getImage()];
+                                                }
+                                            }
+                                            $pc[(int)$p['id'].'_categoryproduct'] = ['id' => $r->getId(), 'url' => $r->getViewLink(), 'title' => $r->getName(), 'image' => $r->getImage(), 'child' => $child];
+                                        }
+                                    }
+                                    $pc1[$type[1]][$kk] = array(
+                                        'label' => $vv['label'] ? $vv['label']:'Danh mục sản phẩm',
+                                        'limit' => $vv['limit'],
+                                        $type2[0] => $pc,
+                                    );
+                                } elseif($type2[1] == 'articlecategory') {
+                                    $ac = [];
+                                    foreach($vv[$type2[0]] as $p) {
+                                        $articlecMapper = $this->getServiceLocator()->get('Admin\Model\ArticlecMapper');
+                                        $articleC = new \Admin\Model\Articlec();
+                                        $articleC->setId((int)$p['id']);
+                                        $acR = $articlecMapper->get($articleC);
+                                        if (!empty($acR)) {
+                                            $articleCs = new \Admin\Model\Articlec();
+                                            $articleCs->setParentId($acR->getId());
+                                            $aCs = $articlecMapper->fetchAll2($articleCs);
+                                            $child = [];
+                                            if(!empty($aCs)) {
+                                                foreach($aCs as $pa) {
+                                                    $child[] = ['id' => $pa->getId(), 'url' => $pa->getViewLink(), 'title' => $pa->getName(),];
+                                                }
+                                            }
+                                            $ac[(int)$p['id'].'_categoryarticle'] = ['id' => $acR->getId(), 'url' => $acR->getViewLink(), 'title' => $acR->getName(), 'child' => $child];
+                                        }
+                                    }
+                                    $ac1[$type[1]][$kk] = array(
+                                        'label' => $vv['label'] ? $vv['label']:'Danh mục tin tức',
+                                        'limit' => $vv['limit'],
+                                        $type2[0] => $ac,
+                                    );
+                                } elseif($type2[1] == 'page') {
+                                    $pa = [];
+                                    foreach($vv[$type2[0]] as $p) {
+                                        $pageMapper = $this->getServiceLocator()->get('Admin\Model\PageMapper');
+                                        $pageR = new \Admin\Model\Page();
+                                        $pageR->setId((int)$p['id']);
+                                        $pr = $pageMapper->get($pageR);
+                                        if (!empty($pr)) {
+                                            $pa[(int)$p['id'].'_page'] = ['id' => $pr->getId(), 'url' => $pr->getViewLink(), 'title' => $pr->getName(), 'image' => $pr->getImage(), 'description' => $pr->getDescription()];
+                                        }
+                                    }
+                                    $pa1[$type[1]][$kk] = array(
+                                        'label' => $vv['label'] ? $vv['label']:'Trang',
+                                        'limit' => $vv['limit'],
+                                        $type2[0] => $pa,
+                                    );
+                                } elseif($type2[1] == 'banner') {
+                                    $ban = [];
+                                    foreach($vv[$type2[0]] as $p) {
+                                        $bannerMapper = $this->getServiceLocator()->get('Admin\Model\BannerMapper');
+                                        $bannerR = new \Admin\Model\Banner();
+                                        $bannerR->setId((int)$p['id']);
+                                        $r = $bannerMapper->get($bannerR);
+                                        if (!empty($r)) {
+                                            $ban[(int)$p['id'].'_banner'] = ['id' => $r->getId(), 'url' => $r->getLink(), 'title' => $r->getName(), 'image' => $r->getImage(), 'description' => $r->getDescription()];
+                                        }
+                                    }
+                                    $ban1[$type[1]][$kk] = array(
+                                        'label' => $vv['label'] ? $vv['label']:'Hình ảnh',
+                                        'limit' => $vv['limit'],
+                                        $type2[0] => $ban,
+                                    );
+                                } else {
+                                    $cc[$type[1]][$kk] = $vv;
+                                }
+
+                                $multi = array_merge( $cc[$type[1]] ? $cc[$type[1]]:[], $ban1[$type[1]] ? $ban1[$type[1]]:[],$pv1[$type[1]] ? $pv1[$type[1]]:[], $at1[$type[1]] ? $at1[$type[1]]:[], $pc1[$type[1]] ? $pc1[$type[1]]:[], $ac1[$type[1]] ? $ac1[$type[1]]:[], $pa1[$type[1]] ? $pa1[$type[1]]:[]);
+                                $options[$k] = $multi;
+                            }
+                        }
+                    }
+                }
+            }
+            $storeDomain->setHomePage(json_encode($options));
+            $domainMapper->save($storeDomain);
+            return new JsonModel(array(
+                'code'=> 1,
+                'messenger' => 'Đã update home page'
+            ));
+        }
+
+        if (!file_exists('public/tp/'.$dir.'/template.php')) {
+            $viewModel = new ViewModel();
+            $viewModel->setTemplate('error/404');
+            return $viewModel;
+        } elseif (!file_exists('public/tp/'.$dir.'/home.php')) {
+//            $viewModel = new ViewModel();
+//            $viewModel->setTemplate('error/404');
+//            return $viewModel;
+            $this->redirect()->toUrl('/admin/page/homepage');
+        } else {
+            if($this->getRequest()->isPost()) {
+                $data = $this->getRequest()->getPost()->toArray();
+                print_r($data);die;
+                $options = [];
+                foreach($data as $k => $d) {
+                    $type = explode('_', $k);
+                    $type2 = explode('--', $type[1]);
+                    $type3 = explode('--', $type[4]);
+                    if ($type[0] == 'banner' || $type2[1] == 'data') {
+                        $bv = [];
+                        $dataFormat = [];
+                        foreach ($d as $p) {
+                            if(is_numeric($p)) {
+                                $bannerMapper = $this->getServiceLocator()->get('Admin\Model\BannerMapper');
+                                $bannerR = new \Admin\Model\Banner();
+                                $bannerR->setId((int)$p);
+                                $r = $bannerMapper->get($bannerR);
+                                if (!empty($r)) {
+                                    $bv[(int)$p.'_banner'] = ['id' => $r->getId(), 'url' => $r->getLink(), 'title' => $r->getName(), 'image' => $r->getImage(), 'description' => $r->getDescription()];
+                                }
+                            } else {
+                                $dataFormat = explode(',',$p);
+                            }
+                        }
+                        $options[$type2[0].' '.$type[1].' banner'] = array (
+                            'limit' => $dataFormat[1],
+                            'label' => $dataFormat[0] ? $dataFormat[0]:'Hình ảnh',
+                            $type2[0] => $bv
+                        );
+                    } elseif ($type[0] == 'multifield') {
+                        if($type[2] == 'selectmulti') {
+                            $v = [];
+                            if($type[3] == 'product') {
+                                $pv = [];
+                                $dataFormat = [];
+                                foreach($d as $p) {
+                                    if(is_numeric($p)) {
+                                        $product = new \Admin\Model\Product();
+                                        $product->setId((int)$p);
+                                        $r = $productMapper->get($product);
+                                        if(!empty($r)) {
+                                            $pv[(int)$p.'_product'] = ['id' => $r->getId(), 'url' => $r->getViewLink(), 'title' => $r->getTitle(), 'price' => $r->getPrice(), 'priceOld' => $r->getPriceOld(), 'image' => $r->getImage(), 'intro' => $r->getIntro(), 'extraContent' => $r->getExtraContent()];
+                                        }
+                                    } else {
+                                        $dataFormat = explode(',',$p);
+                                    }
+                                }
+
+                                $v[$type[1]] = $pv;
+                                $pv1[$type[4]][$type[1].' '.$type[3]] = array(
+                                    'label' => $dataFormat[0] ? $dataFormat[0]:'Sản phẩm',
+                                    'limit' => $dataFormat[1],
+                                    $type[1] => $pv,
+                                );
+                            } elseif ($type[3] == 'article') {
+                                $nv = [];
+                                $dataFormat = [];
+                                foreach ($d as $p) {
+                                    if(is_numeric($p)) {
+                                        $articleMapper = $this->getServiceLocator()->get('Admin\Model\ArticleMapper');
+                                        $articleR = new \Admin\Model\Article();
+                                        $articleR->setId((int)$p);
+                                        $r = $articleMapper->get($articleR);
+                                        if (!empty($r)) {
+                                            $nv[(int)$p.'_article'] = ['id' => $r->getId(), 'url' => $r->getViewLink(), 'title' => $r->getTitle(), 'intro' => $r->getDescription(), 'image'=> $r->getImage(), 'category' => $r->getCateName(), 'date' => $r->getCreatedDateTime(), 'extraContent' => $r->getExtraContent() ];
+                                        }
+                                    } else {
+                                        $dataFormat = explode(',',$p);
+                                    }
+                                }
+                                $v[$type[1]] = $nv;
+                                $nv1[$type[4]][$type[1].' '.$type[3]] = array(
+                                    'label' => $dataFormat[0] ? $dataFormat[0]:'Bài viết',
+                                    'limit' => $dataFormat[1],
+                                    $type[1] => $nv,
+                                );
+                            } elseif ($type[3] == 'productcategory') {
+                                $cv = [];
+                                $dataFormat = [];
+                                foreach ($d as $p) {
+                                    if(is_numeric($p)) {
+                                        $productcMapper = $this->getServiceLocator()->get('Admin\Model\ProductcMapper');
+                                        $categoryR = new \Admin\Model\Productc();
+                                        $categoryR->setId((int)$p);
+                                        $r = $productcMapper->get($categoryR);
+                                        if (!empty($r)) {
+                                            $categoryP = new \Admin\Model\Productc();
+                                            $categoryP->setParentId($r->getId());
+                                            $rP = $productcMapper->fetchAll($categoryP);
+                                            $child = [];
+                                            if(!empty($rP)) {
+                                                foreach($rP as $pa) {
+                                                    $child[] = ['id' => $pa->getId(), 'url' => $pa->getViewLink(), 'title' => $pa->getName(), 'image' => $pa->getImage()];
+                                                }
+                                            }
+                                            $cv[(int)$p.'_categoryproduct'] = ['id' => $r->getId(), 'url' => $r->getViewLink(), 'title' => $r->getName(), 'image' => $r->getImage(), 'child' => $child];
+                                        }
+                                    } else {
+                                        $dataFormat = explode(',',$p);
+                                    }
+                                }
+                                $v[$type[1]] = $cv;
+                                $cv1[$type[4]][$type[1].' '.$type[3]] = array(
+                                    'label' => $dataFormat[0] ? $dataFormat[0]:'Danh mục sản phẩm',
+                                    'limit' => $dataFormat[1],
+                                    $type[1] => $cv,
+                                );
+                            } elseif ($type[3] == 'articlecategory') {
+                                $acs = [];
+                                $dataFormat = [];
+                                foreach ($d as $p) {
+                                    if(is_numeric($p)) {
+                                        $articlecMapper = $this->getServiceLocator()->get('Admin\Model\ArticlecMapper');
+                                        $articleC = new \Admin\Model\Articlec();
+                                        $articleC->setId((int)$p);
+                                        $acR = $articlecMapper->get($articleC);
+                                        if (!empty($acR)) {
+                                            $articleCs = new \Admin\Model\Articlec();
+                                            $articleCs->setParentId($acR->getId());
+                                            $aCs = $articlecMapper->fetchAll2($articleCs);
+                                            $child = [];
+                                            if(!empty($aCs)) {
+                                                foreach($aCs as $pa) {
+                                                    $child[] = ['id' => $pa->getId(), 'url' => $pa->getViewLink(), 'title' => $pa->getName(),];
+                                                }
+                                            }
+                                            $acs[(int)$p.'_categoryarticle'] = ['id' => $acR->getId(), 'url' => $acR->getViewLink(), 'title' => $acR->getName(), 'child' => $child];
+                                        }
+                                    } else {
+                                        $dataFormat = explode(',',$p);
+                                    }
+                                }
+                                $v[$type[1]] = $acs;
+                                $acs1[$type[4]][$type[1].' '.$type[3]] = array(
+                                    'label' => $dataFormat[0] ? $dataFormat[0]:'Danh mục bài viết',
+                                    'limit' => $dataFormat[1],
+                                    $type[1] => $acs,
+                                );
+
+                            } elseif ($type[3] == 'page') {
+                                $pa = [];
+                                $dataFormat = [];
+                                foreach ($d as $p) {
+                                    if(is_numeric($p)) {
+                                        $pageMapper = $this->getServiceLocator()->get('Admin\Model\PageMapper');
+                                        $pageR = new \Admin\Model\Page();
+                                        $pageR->setId((int)$p);
+                                        $pr = $pageMapper->get($pageR);
+                                        if (!empty($pr)) {
+                                            $pa[(int)$p.'_page'] = ['id' => $pr->getId(), 'url' => $pr->getViewLink(), 'title' => $pr->getName(), 'image' => $pr->getImage(), 'description' => $pr->getDescription()];
+                                        }
+                                    } else {
+                                        $dataFormat = explode(',',$p);
+                                    }
+
+                                }
+                                $v[$type[1]] = $pa;
+                                $pa1[$type[4]][$type[1].' '.$type[3]] = array(
+                                    'label' => $dataFormat[0] ? $dataFormat[0]:'Trang',
+                                    'limit' => $dataFormat[1],
+                                    $type[1] => $pa,
+                                );
+                            } elseif ($type[3] == 'banner') {
+                                $ban = [];
+                                $dataFormat = [];
+                                foreach ($d as $p) {
+                                    if(is_numeric($p)) {
+                                        $bannerMapper = $this->getServiceLocator()->get('Admin\Model\BannerMapper');
+                                        $bannerR = new \Admin\Model\Banner();
+                                        $bannerR->setId((int)$p);
+                                        $r = $bannerMapper->get($bannerR);
+                                        if (!empty($r)) {
+                                            $ban[(int)$p.'_banner'] = ['id' => $r->getId(), 'url' => $r->getLink(), 'title' => $r->getName(), 'image' => $r->getImage(), 'description' => $r->getDescription()];
+                                        }
+                                    } else {
+                                        $dataFormat = explode(',',$p);
+                                    }
+                                }
+                                $v[$type[1]] = $ban;
+                                $ban1[$type[4]][$type[1].' '.$type[3]] = array(
+                                    'label' => $dataFormat[0] ? $dataFormat[0]:'Hình ảnh',
+                                    'limit' => $dataFormat[1],
+                                    $type[1] => $ban,
+                                );
+                            }
+                        } elseif ($type[3] == 'field') {
+                            $vL = $d[0];
+                            $vF = $type[2] == 'checkbox' ? $d[1] == 'on' ? 1:0:$d[1];
+                            if($type[2] == 'file') {
+                                $fileF = explode(',', $d[0]);
+                                $vL = $fileF[0];
+                                $vF = $fileF[1] ? $fileF[1]:null;
+                            }
+                            $field[$type[4]][$type[1].' '.$type[2]] = array (
+                                'label' => $vL,
+                                'value' => $vF ? trim($vF):null,
+                            );
+                        } elseif ($type[3] == 'label'){
+                            $label[$type[4]]['label'] = $d[0];
+                        }
+
+                        $multi = array_merge( $label[$type[4]] ? $label[$type[4]]:[], $field[$type[4]] ? $field[$type[4]]:[],$ban1[$type[4]] ? $ban1[$type[4]]:[], $pv1[$type[4]] ? $pv1[$type[4]]:[], $nv1[$type[4]] ? $nv1[$type[4]]:[], $cv1[$type[4]] ? $cv1[$type[4]]:[],$acs1[$type[4]] ? $acs1[$type[4]]:[], $pa1[$type[4]] ? $pa1[$type[4]]:[]);
+                        $options[$type3[0].' '.$type[4].' multifield'] = $multi;
+
+                    }
+//                    }
+                }
+//                print_r($options);die;
+//                if(!empty($value)){
+//                    $storeDomain->setOptionPage(json_encode($options+$value));
+//                } else {
+                $storeDomain->setHomePage(json_encode($options));
+//                }
+                $domainMapper->save($storeDomain);
+                Header('Location: /admin/setup/template');
+                Exit();
+            }
+
+            $field = include('public/tp/'.$dir.'/template.php');
+            $fields = include('public/tp/'.$dir.'/fields.php');
+            $fieldJson = include('public/tp/'.$dir.'/home.php');
+
+            foreach ($fields as $k => $v) {
+                unset($_SESSION[$k]);
+            }
+
+            return new ViewModel(array(
+                'field' => $field,
+                'fields' => $fields,
+                'fieldJson' => json_encode($fields),
+                'value' => $value,
+            ));
+        }
+    }
+
+    public function updatedAction() {
+        $this->layout('layout/null');
+
+        $sl = $this->getServiceLocator();
+        $storeService = $sl->get('Store\Service\Store');
+        $uiTemplate = $storeService->getUitemplate();
+        $dir = $uiTemplate->getDirectory();
+        $sto = $storeService->getStoreId();
+        $idTemplate = $uiTemplate->getId();
+        $u = $sl->get('User\Service\User');
+        $storeId = $u->getStoreId();
+
+        $domainMapper = $sl->get('Admin\Model\DomainMapper');
+        $domain = new \Admin\Model\Domain();
+        $domain->setStoreId($storeId);
+        $rd = $domainMapper->get($domain);
+
+        $storeDomain = new \Store\Model\Domain();
+        $storeDomain->setUitemplate($rd->getUitemplateId());
+        $storeDomain->setStoreId($storeId);
+
+        $domainMapper->get($storeDomain);
+        $value = json_decode($storeDomain->getHomePage(), true);
+        $value = array(
+            'tab-product-layout 1' => array (
+                'label' => 'Tab sản phẩm',
+                'type' => 'multifield',
+                'fields' => array (
+                    'Tiêu đề tab 1' => array(
+                        'type' => 'text',
+                        'keyData' => 'tab1-title',
+                    ),
+                    'Tiêu đề tab 2' => array(
+                        'type' => 'textarea',
+                        'keyData' => 'tab2-title',
+                    ),
+                    'Chọn ảnh' => array(
+                        'type' => 'file',
+                        'keyData' => 'promote-image',
+                    ),
+                    'Slider' => array (
+                        'type' => 'checkbox',
+                        'keyData' => 'news-slider-checkbox',
+                    ),
+                    'HTML' => array (
+                        'type' => 'texteditor',
+                        'keyData' => 'option-html',
+                    ),
+                    'HTML/CSS' => array (
+                        'type' => 'editorhtml',
+                        'keyData' => 'editor-html-description',
+                    ),
+                ),
+            ),
+            'tab-hero-layout 1' => array (
+                'label' => 'Hero',
+                'type' => 'multifield',
+                'fields' => array (
+                    'Tiêu đề tab 1' => array(
+                        'type' => 'text',
+                        'keyData' => 'tab1-title',
+                    ),
+                    'Tiêu đề tab 2' => array(
+                        'type' => 'textarea',
+                        'keyData' => 'tab2-title',
+                    ),
+                ),
+            ),
+        );
+
+        $section = $this->getRequest()->getPost('section');
+
+        if(!isset($_SESSION[$section])) {
+            $_SESSION[$section] = 1;
+        } else {
+            $_SESSION[$section] = $_SESSION[$section] + 1;
+        }
+
+        $fields = include('public/tp/'.$dir.'/fields.php');
+        $render_field = $fields[$section];
+
+        return new ViewModel(array(
+            'fields' => $render_field,
+            'section' => $section,
+            'id' => $_SESSION[$section],
+        ));
+
     }
 
     public function pageAction() {

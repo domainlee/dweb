@@ -1,6 +1,5 @@
 <?php
     echo $this->headtitle($this->escapehtml($this->translate('Giao diện')));
-    $field = $this->field;
     $fieldJson = json_decode($this->fieldJson, true);
     $value = $this->value;
     if(!empty($field)):

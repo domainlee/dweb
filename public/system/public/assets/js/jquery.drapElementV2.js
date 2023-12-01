@@ -5,6 +5,7 @@
 $(function(){
     var drapElement = $('#drapElement');
     var button = $('.dropdown-element li');
+    var btnDeleteModule = $('.btn__delete--module');
 
     /****** Banner ********/
     var selectBanner1 = $(".select-ajax-banner");
@@ -15,10 +16,99 @@ $(function(){
     var countBanner = 0;
 
     /****** drapElement ********/
-    drapElement.sortable({
-        handle: ".portlet-heading",
-        axis: 'y'
-    });
+    var drag = {
+        drapElement : $('#drapElement'),
+        button : $('.dropdown-element li a'),
+        btnDeleteModule : $('.btn__delete--module'),
+        init: function () {
+            $(window).on( 'load', this.loadDrag );
+            this.button.click(function () {
+                drag.addSection($(this).attr('data-key'));
+            });
+        },
+        addSection: function (section) {
+            console.log(section);
+            var form_data = new FormData();
+            form_data.append("section", section);
+            $.ajax({
+                data: form_data,
+                type: "POST",
+                url: "/admin/setup/updated",
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(data) {
+                    drag.drapElement.append(data);
+                    drag.uploadImage();
+                }
+            });
+
+        },
+        loadDrag: function () {
+            drag.drapElement.sortable({
+                handle: ".portlet-heading",
+                axis: 'y'
+            });
+        },
+        uploadImage: function () {
+            $(":file").filestyle();
+            $('.filestyleMulti').each(function () {
+                var id = $(this).attr('id');
+                var t = $(this);
+                var fileInput = document.getElementById(id);
+                var fileInputSubmit = document.getElementsByClassName(id);
+                var itemImageLoad = $(this).prev();
+                var itemImageLoadHidden = $(this).prev().prev();
+                var btnImageLoad = itemImageLoad.find('.image-upload__remove');
+
+                fileInput.addEventListener('change', function() {
+                    var _this = $(this);
+                    var md_10 = _this.closest('.col-md-10');
+
+                    var ins = fileInput.files.length;
+                    var form_data = new FormData();
+                    for(x = 0; x < ins; x++){
+                        var file_data = _this.prop("files")[x];
+                        form_data.append("imagemulti[]", file_data);
+                    }
+                    var inputSubmit = _this.prev().prev();
+                    // var valDefault = inputSubmit.val().split(',')[0];
+                    var btnRemoveImage = _this.prev().find('.image-upload__remove');
+                    _this.parent().find('.wrap-image').remove();
+
+                    $.ajax({
+                        data: form_data,
+                        type: "POST",
+                        url: "/admin/media/upload",
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(url) {
+                            if(url.code) {
+                                _this.prev().val(url.url);
+                                _this.after('<div class="wrap-image"><a class="btn btn-white image-upload__remove"><i class="ion-trash-a"></i></a><img class="img-responsive img-thumbnail" src="'+url.url+'" /></div>');
+                                var btnRemoveImage = _this.parent().find('.image-upload__remove');
+                                btnRemoveImage.click(function (e) {
+                                    _this.parent().find('.wrap-image').remove();
+                                    _this.prev().val('');
+                                });
+                            }
+                        }
+                    });
+                });
+
+                btnImageLoad.click(function (e) {
+                    var valDefault = itemImageLoadHidden.val().split(',')[0];
+                    itemImageLoadHidden.val(valDefault);
+                    itemImageLoad.html('');
+                });
+            });
+
+        }
+    }
+    drag.init();
+
+
     var aL = [];
     var bL = [];
     button.each(function () {
@@ -33,59 +123,7 @@ $(function(){
         $(this).find('a').click(function (e) {
             e.preventDefault();
             var t = $(this);
-            var label = $(this).attr('data-label');
-            var jsonPa = JSON.parse($(this).attr('data-field'));
 
-            $.each(jsonPa, function(k, v) {
-                if(v == 'banner' || k == 'selectmulti') {
-                    if(bL[ChangeToSlug(label)] < aL[ChangeToSlug(label)]) {
-                        bL[ChangeToSlug(label)] = aL[ChangeToSlug(label)];
-                    }
-                    if(bL[ChangeToSlug(label)] > 0) {
-                        t.data('count', bL[ChangeToSlug(label)]);
-                    }
-                    if (t.data('count')) {
-                        bL[ChangeToSlug(label)] = aL[ChangeToSlug(label)];
-                        t.data('count', bL[ChangeToSlug(label)]);
-                        t.data('count', t.data('count') + 1);
-                    } else {
-                        t.data('count', 1);
-                    }
-                    bL[ChangeToSlug(label)] = t.data('count');
-                    aL[ChangeToSlug(label)] = bL[ChangeToSlug(label)];
-                    console.log('Banner Count Global '+bL[ChangeToSlug(label)]);
-                    drapElement.append(elementAdd(label, null, jsonPa['keyData'], jsonPa['limit'], t.data('count')));
-                }
-                if(v == 'multifield') {
-                    if(bL[ChangeToSlug(label)] < aL[ChangeToSlug(label)]) {
-                        bL[ChangeToSlug(label)] = aL[ChangeToSlug(label)];
-                    }
-                    if(bL[ChangeToSlug(label)] > 0) {
-                        t.data('count', bL[ChangeToSlug(label)]);
-                    }
-                    if (t.data('count')) {
-                        bL[ChangeToSlug(label)] = aL[ChangeToSlug(label)];
-                        t.data('count', bL[ChangeToSlug(label)]);
-                        t.data('count', t.data('count') + 1);
-                    } else {
-                        t.data('count', 1);
-                    }
-                    bL[ChangeToSlug(label)] = t.data('count');
-                    aL[ChangeToSlug(label)] = bL[ChangeToSlug(label)];
-
-                    console.log('Product Count Global '+bL[ChangeToSlug(label)]);
-                    drapElement.append(elementMulAdd(label, jsonPa['field'], jsonPa['keyData'], t.data('count'), jsonPa['type']));
-
-                    $.each(jsonPa['field'], function (k, v) {
-                        if(v.type == 'editorhtml') {
-                            codeEditor("codeHtml"+t.data('count'));
-                        }
-                    });
-
-                }
-            });
-
-            $.getScript(scripLoad());
         });
     });
 

@@ -49,7 +49,7 @@ return array(
     ),
     'hero_layout' => array (
         'label' => 'Hero',
-        'type' => 'multifield',
+        'type' => 'repeater',
         'fields' => array (
             'Tiêu đề tab 1' => array(
                 'type' => 'text',

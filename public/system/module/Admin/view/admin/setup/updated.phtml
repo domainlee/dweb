@@ -2,6 +2,8 @@
     $fields = $this->fields;
     $section = $this->section;
     $id = $this->id;
+    $type_field = $this->fields['type'];
+    $count_item = 1;
 ?>
 <?php if(!empty($fields)): ?>
     <div  class="portlet <?= vnString($fields['label']); ?>">
@@ -15,39 +17,55 @@
             <div class="clearfix"></div>
         </div>
         <div id="<?= $section.$id ?>" class="panel-collapse collapse" aria-expanded="false">
-            <div class="portlet-body">
-                <?php
-                    foreach ($fields['fields'] as $kk => $vv):
-                ?>
-                <div class="form-group">
-                    <label class="col-md-2 control-label"><?= $kk ?></label>
-                    <div class="col-md-10">
-                        <?php if($vv['type'] == 'checkbox'): ?>
-                            <div class="checkbox">
-                                <input name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]"  type="checkbox" class="form-control">
-                                <label><?= '' ?></label>
-                            </div>
-                        <?php elseif($vv['type'] == 'text'): ?>
-                            <input name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]" value="<?= '' ?>" type="text" class="form-control">
-                        <?php elseif($vv['type'] == 'textarea'): ?>
-                            <textarea name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]" class="form-control"><?= '' ?></textarea>
-                        <?php elseif($vv['type'] == 'texteditor'): ?>
-                            <textarea name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]" class="textEditor form-control"><?= '' ?></textarea>
-                        <?php elseif($vv['type'] == 'editorhtml'): ?>
-                            <div class="panel panel-default">
-                                <div class="panel-body p-0">
-                                    <textarea name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]" id="codeHtml<?= $section.$id ?>" class="editorHtml form-control"><?= '' ?></textarea>
+            <div class="portlet-body <?php echo $type_field.'-inner' ?>">
+                <?php if($type_field == 'repeater'): ?>
+                    <input type="hidden" class="repeater_count" value="<?php echo $count_item ?>">
+                    <input type="hidden" class="repeater_id" value="<?php echo $section.$id ?>">
+                    <input type="hidden" class="repeater_layout" value="<?php echo $section ?>">
+                    <div class="repeater__list">
+                    <div class="repeater-item">
+                <?php endif; ?>
+                    <?php foreach ($fields['fields'] as $kk => $vv): ?>
+                    <div class="form-group">
+                        <label class="col-md-2 control-label"><?= $kk ?></label>
+                        <div class="col-md-10">
+                            <?php if($vv['type'] == 'checkbox'): ?>
+                                <div class="checkbox">
+                                    <input name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]"  type="checkbox" class="form-control">
+                                    <label><?= '' ?></label>
                                 </div>
-                            </div>
-                        <?php elseif($vv['type'] == 'file'): ?>
-                            <input type="hidden" class="" value="" id="image_<?= $section ?>-<?= $id ?>" name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]">
-                            <input type="file" class="filestyle filestyleMulti" value="" id="<?= $section ?>-<?= $id ?>" name="<?= $section ?>-<?= $id ?>[<?= $vv['keyData'] ?>][0]">
-                        <?php elseif($vv['type'] == 'product'): ?>
+                            <?php elseif($vv['type'] == 'text'): ?>
+                                <input name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" value="<?= '' ?>" type="text" class="form-control">
+                            <?php elseif($vv['type'] == 'textarea'): ?>
+                                <textarea name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" class="form-control"><?= '' ?></textarea>
+                            <?php elseif($vv['type'] == 'texteditor'): ?>
+                                <textarea name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" class="textEditor form-control"><?= '' ?></textarea>
+                            <?php elseif($vv['type'] == 'editorhtml'): ?>
+                                <div class="panel panel-default">
+                                    <div class="panel-body p-0">
+                                        <textarea name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" id="codeHtml<?= $section.$id ?>" class="editorHtml form-control"><?= '' ?></textarea>
+                                    </div>
+                                </div>
+                            <?php elseif($vv['type'] == 'file'): ?>
+                                <input type="hidden" class="" value="" id="image_<?= $section ?>-<?= $id ?>" name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]">
+                                <input type="file" class="filestyle filestyleMulti" value="" id="<?= $section ?>-<?= $id ?>" name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]">
+                            <?php elseif($vv['type'] == 'product'): ?>
 
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                </div>
-                <?php  endforeach; ?>
+                    <?php  endforeach; ?>
+                <?php if($type_field == 'repeater'): ?>
+                    </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="btn-group pull-right">
+                                <a class="add-row btn btn-default waves-effect waves-light">Add Row</a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>

@@ -25,6 +25,7 @@ $(function(){
             this.button.click(function () {
                 drag.addSection($(this).attr('data-key'));
             });
+
         },
         addSection: function (section) {
             console.log(section);
@@ -40,9 +41,33 @@ $(function(){
                 success: function(data) {
                     drag.drapElement.append(data);
                     drag.uploadImage();
+                    drag.addRow();
                 }
             });
 
+        },
+        addRow: function () {
+            var button_add_row = drag.drapElement.find('.add-row');
+            button_add_row.on('click', function () {
+                var inner = $(this).closest('.portlet-body');
+                var section_row = inner.find('.repeater_id').val();
+                var section = inner.find('.repeater_layout').val();
+                var repeater_list = inner.find('.repeater__list');
+                var form_data = new FormData();
+                form_data.append("section_row", section_row);
+                form_data.append("section", section);
+                $.ajax({
+                    data: form_data,
+                    type: "POST",
+                    url: "/admin/setup/updated",
+                    cache: false,
+                    contentType: false,
+                    processData: false,
+                    success: function(data) {
+                        repeater_list.append(data);
+                    }
+                });
+            });
         },
         loadDrag: function () {
             drag.drapElement.sortable({

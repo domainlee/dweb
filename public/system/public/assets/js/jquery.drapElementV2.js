@@ -65,6 +65,11 @@ $(function(){
                     processData: false,
                     success: function(data) {
                         repeater_list.append(data);
+                        inner.find('.repeater_count').val(repeater_list.find('.repeater-item').length);
+
+                        repeater_list.find('.repeater-item').each(function (n) {
+                            $(this).find('.repeater-number').text(n+1);
+                        });
                     }
                 });
             });

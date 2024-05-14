@@ -7,8 +7,7 @@
 ?>
 <?php if(!empty($fields)): ?>
     <div class="repeater-item">
-        <?php foreach ($fields['fields'] as $kk => $vv): ?>
-            <?php
+        <?php
             $viewModel = new \Zend\View\Model\ViewModel();
             $viewModel->setTemplate("admin/setup/fields");
             $viewModel->setVariables(array(
@@ -17,12 +16,9 @@
                 'id' => $id,
                 'type_field' => $type_field,
                 'count_item' => $count_item,
-                'kk' => $kk,
-                'vv' => $vv,
             ));;
             echo $this->render($viewModel);
-            ?>
-        <?php  endforeach; ?>
+        ?>
         <span class="repeater-number"><?php echo $count_item ?></span>
     </div>
 <?php endif; exit(); ?>

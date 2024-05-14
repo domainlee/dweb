@@ -28,22 +28,18 @@
                     <div class="repeater__list">
                     <div class="repeater-item">
                 <?php endif; ?>
-                    <?php foreach ($fields['fields'] as $kk => $vv): ?>
-                        <?php
-                            $viewModel = new \Zend\View\Model\ViewModel();
-                            $viewModel->setTemplate("admin/setup/fields");
-                            $viewModel->setVariables(array(
-                                'fields' => $fields,
-                                'section' => $section,
-                                'id' => $id,
-                                'type_field' => $type_field,
-                                'count_item' => $count_item,
-                                'kk' => $kk,
-                                'vv' => $vv,
-                            ));;
-                            echo $this->render($viewModel);
-                        ?>
-                    <?php  endforeach; ?>
+                <?php
+                    $viewModel = new \Zend\View\Model\ViewModel();
+                    $viewModel->setTemplate("admin/setup/fields");
+                    $viewModel->setVariables(array(
+                        'fields' => $fields,
+                        'section' => $section,
+                        'id' => $id,
+                        'type_field' => $type_field,
+                        'count_item' => $count_item,
+                    ));;
+                    echo $this->render($viewModel);
+                ?>
                 <?php if($type_field == 'repeater'): ?>
                         <span class="repeater-number"><?php echo 1 ?></span>
                     </div>

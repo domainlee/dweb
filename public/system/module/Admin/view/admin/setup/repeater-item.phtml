@@ -19,6 +19,9 @@
             ));
             echo $this->render($viewModel);
         ?>
-        <span class="repeater-number"><?php echo $count_item ?></span>
+        <div class="control">
+            <span class="repeater-number"><?php echo $count_item ?></span>
+            <a href="#" class="table-action-btn"><i class="md md-close"></i></a>
+        </div>
     </div>
 <?php endif; exit(); ?>

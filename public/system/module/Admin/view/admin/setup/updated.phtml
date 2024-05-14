@@ -5,7 +5,10 @@
     $type_field = $this->fields['type'];
     $count_item = 1;
 ?>
-<?php if(!empty($fields)): ?>
+
+<?php if(!empty($fields)):
+
+    ?>
     <div  class="portlet <?= vnString($fields['label']); ?>">
         <div class="portlet-heading portlet-default collapsed" data-toggle="collapse" data-parent="#<?= $section.$id ?>" href="#<?= $section.$id ?>" aria-expanded="false">
             <h3 class="portlet-title">  <?= $fields['label'] ?> </h3>
@@ -26,34 +29,20 @@
                     <div class="repeater-item">
                 <?php endif; ?>
                     <?php foreach ($fields['fields'] as $kk => $vv): ?>
-                    <div class="form-group">
-                        <label class="col-md-2 control-label"><?= $kk ?></label>
-                        <div class="col-md-10">
-                            <?php if($vv['type'] == 'checkbox'): ?>
-                                <div class="checkbox">
-                                    <input name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]"  type="checkbox" class="form-control">
-                                    <label><?= '' ?></label>
-                                </div>
-                            <?php elseif($vv['type'] == 'text'): ?>
-                                <input name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" value="<?= '' ?>" type="text" class="form-control">
-                            <?php elseif($vv['type'] == 'textarea'): ?>
-                                <textarea name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" class="form-control"><?= '' ?></textarea>
-                            <?php elseif($vv['type'] == 'texteditor'): ?>
-                                <textarea name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" class="textEditor form-control"><?= '' ?></textarea>
-                            <?php elseif($vv['type'] == 'editorhtml'): ?>
-                                <div class="panel panel-default">
-                                    <div class="panel-body p-0">
-                                        <textarea name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]" id="codeHtml<?= $section.$id ?>" class="editorHtml form-control"><?= '' ?></textarea>
-                                    </div>
-                                </div>
-                            <?php elseif($vv['type'] == 'file'): ?>
-                                <input type="hidden" class="" value="" id="image_<?= $section ?>-<?= $id ?>" name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]">
-                                <input type="file" class="filestyle filestyleMulti" value="" id="<?= $section ?>-<?= $id ?>" name="<?= $section ?>-<?= $id ?>[<?= $count_item ?>][<?= $vv['keyData'] ?>]">
-                            <?php elseif($vv['type'] == 'product'): ?>
-
-                            <?php endif; ?>
-                        </div>
-                    </div>
+                        <?php
+                            $viewModel = new \Zend\View\Model\ViewModel();
+                            $viewModel->setTemplate("admin/setup/fields");
+                            $viewModel->setVariables(array(
+                                'fields' => $fields,
+                                'section' => $section,
+                                'id' => $id,
+                                'type_field' => $type_field,
+                                'count_item' => $count_item,
+                                'kk' => $kk,
+                                'vv' => $vv,
+                            ));;
+                            echo $this->render($viewModel);
+                        ?>
                     <?php  endforeach; ?>
                 <?php if($type_field == 'repeater'): ?>
                         <span class="repeater-number"><?php echo 1 ?></span>

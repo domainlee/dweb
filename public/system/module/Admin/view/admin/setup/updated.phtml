@@ -41,7 +41,10 @@
                     echo $this->render($viewModel);
                 ?>
                 <?php if($type_field == 'repeater'): ?>
-                        <span class="repeater-number"><?php echo 1 ?></span>
+                        <div class="control">
+                            <span class="repeater-number"><?php echo 1 ?></span>
+                            <a class="delete">X</a>
+                        </div>
                     </div>
                     </div>
                     <div class="row">

@@ -2406,3 +2406,32 @@ div.hopscotch-bubble .hopscotch-bubble-arrow-container.down .hopscotch-bubble-ar
   text-transform: uppercase;
   font-size: 11px;
 }
+.repeater-item {
+  position: relative;
+  padding: 0 100px 0 0;
+}
+.repeater-item .control {
+  position: absolute;
+  right: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  bottom: 0;
+  justify-content: start;
+  width: 70px;
+}
+.repeater-number {
+  font-size: 13px;
+  border: 1px solid #DDD;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.control a {
+  margin: 0 0 0 10px;
+  display: inline-block;
+}

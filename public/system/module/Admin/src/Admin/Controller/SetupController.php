@@ -1312,20 +1312,31 @@ class SetupController extends AbstractActionController{
         );
 
         $section = $this->getRequest()->getPost('section');
+        $section_minus = $this->getRequest()->getPost('section_minus');
         $section_row = $this->getRequest()->getPost('section_row');
+        $section_row_minus = $this->getRequest()->getPost('section_row_minus');
 
         if(!$section_row) {
             if(!isset($_SESSION[$section])) {
                 $_SESSION[$section] = 1;
             } else {
-                $_SESSION[$section] = $_SESSION[$section] + 1;
+                if($section_minus && $_SESSION[$section] > 0) {
+                    $_SESSION[$section] = $_SESSION[$section] - 1;
+                } else {
+                    $_SESSION[$section] = $_SESSION[$section] + 1;
+                }
             }
         } else {
             if(!isset($_SESSION[$section_row])) {
                 $_SESSION[$section_row] = 2;
             } else {
-                $_SESSION[$section_row] = $_SESSION[$section_row] + 1;
+                if($section_row_minus && $_SESSION[$section_row] > 1) {
+                    $_SESSION[$section_row] = $_SESSION[$section_row] - 1;
+                } else {
+                    $_SESSION[$section_row] = $_SESSION[$section_row] + 1;
+                }
             }
+//            print_r($_SESSION[$section_row]);die;
         }
 
         $fields = include('public/tp/'.$dir.'/fields.php');

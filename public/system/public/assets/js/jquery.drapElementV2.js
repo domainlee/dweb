@@ -42,9 +42,33 @@ $(function(){
                     drag.drapElement.append(data);
                     drag.uploadImage();
                     drag.addRow();
+                    drag.deleteRow();
+                    drag.deleteSection();
                 }
             });
-
+        },
+        deleteSection: function () {
+            var sections = drag.drapElement.find('.portlet');
+            sections.each(function () {
+                var t = $(this);
+                var button_delete_section = t.find('.btn__delete--module');
+                button_delete_section.on('click', function () {
+                    var form_data = new FormData();
+                    form_data.append("section", $(this).attr('data-module'));
+                    form_data.append("section_minus", true);
+                    $.ajax({
+                        data: form_data,
+                        type: "POST",
+                        url: "/admin/setup/updated",
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data) {
+                            t.remove();
+                        }
+                    });
+                });
+            });
         },
         addRow: function () {
             var button_add_row = drag.drapElement.find('.add-row');
@@ -70,8 +94,39 @@ $(function(){
                         repeater_list.find('.repeater-item').each(function (n) {
                             $(this).find('.repeater-number').text(n+1);
                         });
+                        drag.deleteRow();
                     }
                 });
+            });
+        },
+        deleteRow: function () {
+            var repeater_item = drag.drapElement.find('.repeater-item');
+            repeater_item.each(function () {
+                var t = $(this);
+                var button_delete = t.find('.delete-row');
+                button_delete.on('click', function () {
+                    var inner = $(this).closest('.portlet-body');
+                    var section_row = inner.find('.repeater_id').val();
+                    var section = inner.find('.repeater_layout').val();
+                    var repeater_list = inner.find('.repeater__list');
+                    var form_data = new FormData();
+                    form_data.append("section_row", section_row);
+                    form_data.append("section", section);
+                    form_data.append("section_row_minus", true);
+                    $.ajax({
+                        data: form_data,
+                        type: "POST",
+                        url: "/admin/setup/updated",
+                        cache: false,
+                        contentType: false,
+                        processData: false,
+                        success: function(data) {
+                            t.remove();
+                        }
+                    });
+
+                });
+
             });
         },
         loadDrag: function () {

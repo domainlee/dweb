@@ -2408,7 +2408,10 @@ div.hopscotch-bubble .hopscotch-bubble-arrow-container.down .hopscotch-bubble-ar
 }
 .repeater-item {
   position: relative;
-  padding: 0 100px 0 0;
+  border: 1px solid #ededed;
+  padding: 20px 100px 20px 0;
+  border-radius: 10px;
+  margin: 0 0 20px;
 }
 .repeater-item .control {
   position: absolute;
@@ -2434,7 +2437,4 @@ div.hopscotch-bubble .hopscotch-bubble-arrow-container.down .hopscotch-bubble-ar
 .control a {
   margin: 0 0 0 10px;
   display: inline-block;
-}
-.repeater-item {
-  margin: 0 0 20px;
 }

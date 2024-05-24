@@ -2435,3 +2435,6 @@ div.hopscotch-bubble .hopscotch-bubble-arrow-container.down .hopscotch-bubble-ar
   margin: 0 0 0 10px;
   display: inline-block;
 }
+.repeater-item {
+  margin: 0 0 20px;
+}
